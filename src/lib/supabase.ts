@@ -1,14 +1,126 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
+export const supabaseConfigErrorMessage =
+  'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to enable auth and data features.';
 
-if (!supabaseUrl || !supabasePublishableKey) {
+if (!isSupabaseConfigured) {
   console.error('Supabase configuration missing!', {
     url: supabaseUrl ? 'Set' : 'Missing',
     key: supabasePublishableKey ? 'Set' : 'Missing'
   });
 }
+
+const createSupabaseConfigError = () => {
+  const error = new Error(supabaseConfigErrorMessage) as Error & { status?: number };
+  error.name = 'SupabaseConfigError';
+  error.status = 503;
+  return error;
+};
+
+const createDisabledQueryBuilder = () => {
+  const builder: any = {
+    data: null,
+    error: createSupabaseConfigError(),
+    count: null,
+    status: 503,
+    statusText: 'Supabase disabled'
+  };
+
+  const chainableMethods = [
+    'select',
+    'insert',
+    'upsert',
+    'update',
+    'delete',
+    'eq',
+    'neq',
+    'gt',
+    'gte',
+    'lt',
+    'lte',
+    'like',
+    'ilike',
+    'is',
+    'in',
+    'contains',
+    'containedBy',
+    'rangeGt',
+    'rangeGte',
+    'rangeLt',
+    'rangeLte',
+    'overlaps',
+    'textSearch',
+    'filter',
+    'match',
+    'not',
+    'or',
+    'order',
+    'limit',
+    'range',
+    'abortSignal',
+    'single',
+    'maybeSingle',
+    'csv',
+    'geojson',
+    'explain'
+  ];
+
+  chainableMethods.forEach((method) => {
+    builder[method] = () => builder;
+  });
+
+  return builder;
+};
+
+const createDisabledRealtimeChannel = () => {
+  const channel: any = {
+    on: () => channel,
+    subscribe: () => channel,
+    unsubscribe: () => {}
+  };
+
+  return channel;
+};
+
+const createDisabledSupabaseClient = (): SupabaseClient<any, any, any> => {
+  const errorResponse = <TData>(data: TData) =>
+    Promise.resolve({ data, error: createSupabaseConfigError() });
+
+  const authSubscription = {
+    unsubscribe: () => {}
+  };
+
+  return {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+      refreshSession: () => errorResponse({ session: null, user: null }),
+      signOut: () => Promise.resolve({ error: null }),
+      signInWithPassword: () => errorResponse({ user: null, session: null }),
+      signUp: () => errorResponse({ user: null, session: null }),
+      resetPasswordForEmail: () => errorResponse(null),
+      updateUser: () => errorResponse({ user: null }),
+      setSession: () => errorResponse({ session: null, user: null }),
+      signInWithOAuth: () => errorResponse({ provider: null, url: null }),
+      getUserIdentities: () => errorResponse({ identities: [] }),
+      linkIdentity: () => errorResponse({ provider: null, url: null }),
+      onAuthStateChange: () => ({ data: { subscription: authSubscription } }),
+      admin: {
+        inviteUserByEmail: () => errorResponse({ user: null }),
+        listUsers: () => errorResponse({ users: [] })
+      }
+    },
+    functions: {
+      invoke: () => errorResponse(null)
+    },
+    from: () => createDisabledQueryBuilder(),
+    rpc: () => errorResponse(null),
+    channel: () => createDisabledRealtimeChannel()
+  } as unknown as SupabaseClient<any, any, any>;
+};
 
 let rateLimitedUntil = 0;
 let rateLimitBackoff = 30000;
@@ -50,33 +162,35 @@ if (typeof window !== 'undefined' && typeof (window as any).__supabaseRefreshing
   (window as any).__supabaseRefreshingToken = false;
 }
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    autoRefreshTickDuration: 60,
-    flowType: 'pkce',
-    storage: {
-      getItem: (key) => {
-        if (typeof window !== 'undefined') {
-          return window.localStorage.getItem(key);
-        }
-        return null;
-      },
-      setItem: (key, value) => {
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(key, value);
-        }
-      },
-      removeItem: (key) => {
-        if (typeof window !== 'undefined') {
-          window.localStorage.removeItem(key);
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabasePublishableKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        autoRefreshTickDuration: 60,
+        flowType: 'pkce',
+        storage: {
+          getItem: (key) => {
+            if (typeof window !== 'undefined') {
+              return window.localStorage.getItem(key);
+            }
+            return null;
+          },
+          setItem: (key, value) => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem(key, value);
+            }
+          },
+          removeItem: (key) => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.removeItem(key);
+            }
+          }
         }
       }
-    }
-  }
-});
+    })
+  : createDisabledSupabaseClient();
 
 // Database types
 export interface Profile {

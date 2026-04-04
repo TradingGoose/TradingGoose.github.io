@@ -70,7 +70,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://github.com/Trading-Goose/Trading-Goose.github.io"
+                href="https://github.com/TradingGoose/TradingGoose.github.io"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"

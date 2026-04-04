@@ -18,7 +18,7 @@ import {
 import { useAuth, hasRequiredApiKeys, hasAlpacaCredentials, isSessionValid } from "@/lib/auth";
 import { RoleBadge, RoleGate } from "@/components/RoleBasedAccess";
 import { useRBAC } from "@/hooks/useRBAC";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   ANALYSIS_STATUS,
   convertLegacyAnalysisStatus,
@@ -57,6 +57,7 @@ export default function Header() {
     return { dotClass: 'bg-red-500', message: 'Configurations Required' };
   }, [hasAiConfig, hasAlpacaConfig]);
   const primaryRole = getPrimaryRole();
+  const authEnabled = isSupabaseConfigured;
 
   // Check for running analyses and rebalances
   useEffect(() => {
@@ -165,7 +166,8 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              {isAuthenticated ? (
+              {authEnabled ? (
+                isAuthenticated ? (
                 <>
                   {/* Desktop Profile Dropdown */}
                   <DropdownMenu>
@@ -353,7 +355,7 @@ export default function Header() {
                     </div>
                   </div>
                 </>
-              ) : (
+                ) : (
                 <>
                   <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
                     <LogIn className="h-4 w-4 mr-1 sm:mr-2" />
@@ -372,7 +374,8 @@ export default function Header() {
                     </div>
                   </div>
                 </>
-              )}
+                )
+              ) : null}
             </div>
           </div>
         </div>

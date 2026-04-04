@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from './supabase';
+import { isSupabaseConfigured } from './supabase';
 import type { ApiSettings, Profile } from './supabase';
 import { getCachedSession, clearSessionCache, updateCachedSession } from './cachedAuth';
 import type { User, Session } from '@supabase/supabase-js';
@@ -39,6 +40,35 @@ interface AuthState {
   forceAssignAdmin: () => Promise<{ success: boolean; error?: string }>;
 }
 
+const getSupabaseStorageKey = (): string | null => {
+  const configuredUrl = import.meta.env.VITE_SUPABASE_URL || '';
+
+  if (!configuredUrl) {
+    return null;
+  }
+
+  try {
+    const hostname = new URL(configuredUrl).hostname;
+    const projectRef = hostname.split('.')[0];
+    return projectRef ? `sb-${projectRef}-auth-token` : null;
+  } catch {
+    return null;
+  }
+};
+
+const getStoredSupabaseSession = (): string | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const storageKey = getSupabaseStorageKey();
+  if (!storageKey) {
+    return null;
+  }
+
+  return localStorage.getItem(storageKey);
+};
+
 export const useAuth = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -54,6 +84,20 @@ export const useAuth = create<AuthState>()(
 
       // Initialize authentication
       initialize: async () => {
+        if (!isSupabaseConfigured) {
+          set({
+            session: null,
+            user: null,
+            profile: null,
+            apiSettings: null,
+            isAuthenticated: false,
+            isAdmin: false,
+            isLoading: false,
+            error: null
+          });
+          return;
+        }
+
         // Prevent re-initialization if already loading or already authenticated
         const currentState = get();
         if (currentState.isLoading) {
@@ -173,9 +217,7 @@ export const useAuth = create<AuthState>()(
               console.log('🔐 Auth: Token/Session expired, attempting restoration...');
               
               // Try to get a fresh session from localStorage
-              const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-              const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
-              const storedSession = localStorage.getItem(storageKey);
+              const storedSession = getStoredSupabaseSession();
               
               if (storedSession) {
                 try {
@@ -742,6 +784,20 @@ const globalAuthState = (() => {
 })();
 
 export const initializeAuth = () => {
+  if (!isSupabaseConfigured) {
+    useAuth.setState({
+      session: null,
+      user: null,
+      profile: null,
+      apiSettings: null,
+      isAuthenticated: false,
+      isAdmin: false,
+      isLoading: false,
+      error: null
+    });
+    return;
+  }
+
   // Track page load time for more lenient token validation during page refresh
   if (!(window as any).__pageLoadTime) {
     (window as any).__pageLoadTime = Date.now();
@@ -762,9 +818,7 @@ export const initializeAuth = () => {
   const currentState = useAuth.getState();
   if (!currentState.isAuthenticated) {
     console.log('🔐 Page load - attempting immediate session restoration');
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-    const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
-    const storedSession = localStorage.getItem(storageKey);
+    const storedSession = getStoredSupabaseSession();
     
     if (storedSession) {
       try {
@@ -880,9 +934,8 @@ export const initializeAuth = () => {
         return;
       }
       
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-      const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
-      const storedSession = localStorage.getItem(storageKey);
+      const storageKey = getSupabaseStorageKey();
+      const storedSession = getStoredSupabaseSession();
       
       if (storedSession) {
         try {
@@ -912,7 +965,7 @@ export const initializeAuth = () => {
             if (timeUntilExpiry > 60) {
               console.log('🔐 Auth state lost but valid session found, restoring...');
               useAuth.getState().initialize();
-            } else if (timeUntilExpiry <= 0) {
+            } else if (timeUntilExpiry <= 0 && storageKey) {
               // Session in localStorage is expired, clean it up
               console.log('🔐 Expired session found in localStorage, cleaning up...');
               localStorage.removeItem(storageKey);
@@ -1021,9 +1074,7 @@ export const initializeAuth = () => {
       console.log('🔐 SIGNED_OUT event received, checking if we should ignore...');
       
       // ALWAYS try to restore from localStorage first before clearing auth state
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-      const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
-      const storedSession = localStorage.getItem(storageKey);
+      const storedSession = getStoredSupabaseSession();
       
       if (storedSession) {
         try {
@@ -1159,11 +1210,13 @@ if (typeof window !== 'undefined') {
   // Add window focus listener to restore authentication
   window.addEventListener('focus', () => {
     const state = useAuth.getState();
+    if (!isSupabaseConfigured) {
+      return;
+    }
+
     if (!state.isAuthenticated && !state.isLoading) {
       console.log('🔐 Window focus - checking for stored session');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-      const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
-      const storedSession = localStorage.getItem(storageKey);
+      const storedSession = getStoredSupabaseSession();
       
       if (storedSession) {
         try {
@@ -1195,6 +1248,10 @@ export const isAdmin = () => useAuth.getState().isAdmin;
 
 // Helper function to check if the session is valid and not expired
 export const isSessionValid = (): boolean => {
+  if (!isSupabaseConfigured) {
+    return false;
+  }
+
   const state = useAuth.getState();
   
   // Check if we have an invalid refresh token flag
@@ -1240,9 +1297,7 @@ export const isSessionValid = (): boolean => {
   }
   
   // Check if we have a valid session in localStorage that we can restore
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-  const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
-  const storedSession = localStorage.getItem(storageKey);
+  const storedSession = getStoredSupabaseSession();
   
   if (storedSession) {
     try {

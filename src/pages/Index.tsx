@@ -4,11 +4,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { Bot, Shield, Calendar, Play, Key, TrendingUp, CheckCircle } from "lucide-react";
+import { Bot, Shield, Calendar, Play, TrendingUp, CheckCircle } from "lucide-react";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
+  const authEnabled = isSupabaseConfigured;
 
   useEffect(() => {
     // Check if this is a password recovery redirect
@@ -44,7 +46,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => window.open('https://github.com/Trading-Goose/Trading-Goose.github.io', '_blank')}
+                  onClick={() => window.open('https://github.com/TradingGoose/TradingGoose.github.io', '_blank')}
                 >
                   <svg
                     className="h-4 w-4 fill-current"
@@ -65,7 +67,25 @@ const Index = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {!isLoading && isAuthenticated ? (
+              {!authEnabled ? (
+                <>
+                  <Button
+                    size="lg"
+                    className="text-lg px-8 py-6"
+                    onClick={() => window.open('https://tradinggoose.ai', '_blank')}
+                  >
+                    Visit tradinggoose.ai
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="text-lg px-8 py-6"
+                    onClick={() => window.open('https://github.com/TradingGoose/TradingGoose-Studio', '_blank')}
+                  >
+                    View Studio Repo
+                  </Button>
+                </>
+              ) : !isLoading && isAuthenticated ? (
                 <Button size="lg" className="text-lg px-8 py-6" onClick={() => navigate('/dashboard')}>
                   Go to Dashboard
                 </Button>
@@ -79,6 +99,114 @@ const Index = () => {
                   </Button>
                 </>
               )}
+            </div>
+          </div>
+
+          {/* TradingGoose Studio Spotlight */}
+          <div className="py-4 md:py-8">
+            <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,204,0,0.16),transparent_35%)]" />
+              <div className="relative grid grid-cols-1 lg:grid-cols-[1.05fr,0.95fr] gap-0">
+                <div className="p-8 md:p-10 lg:p-12 space-y-6">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    Alpha Release
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    TradingGoose Studio
+                  </div>
+
+                  <div className="space-y-4">
+                    <h2 className="text-3xl md:text-4xl font-bold">
+                      <span className="block">Introducing</span>
+                      <span className="block" style={{ color: '#FFCC00' }}>TradingGoose Studio</span>
+                    </h2>
+                    <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
+                      Thank you for trying the original TradingGoose. TradingGoose Studio is now available in alpha on GitHub for self-hosting.
+                    </p>
+                    <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
+                      TradingGoose Studio is not ready to be used as a hosted service yet. If you want the current hosted TradingGoose experience, use tradinggoose.ai. If you want to explore Studio today, use the GitHub repo and self-host it.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    {[
+                      {
+                        title: "Custom Workflows",
+                        description: "Build your own analytics workflows around your strategy and process.",
+                      },
+                      {
+                        title: "Live Indicator Triggers",
+                        description: "Use custom live indicators to monitor market data and trigger workflows in real time.",
+                      },
+                      {
+                        title: "Bring Your Own Accounts",
+                        description: "Connect your own data sources and trading accounts to power the system.",
+                      },
+                      {
+                        title: "150+ Integrations",
+                        description: "Use tools like Reddit, Exa, Gmail, and extend agents with custom Skills and MCP.",
+                      },
+                      {
+                        title: "Widget Dashboards",
+                        description: "Create your own interface with customizable dashboards and widget-based layouts.",
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.title}
+                        className="rounded-xl border border-border/60 bg-background/40 p-3 space-y-1.5"
+                      >
+                        <div className="text-xs sm:text-sm font-semibold leading-tight">{item.title}</div>
+                        <p className="text-xs text-muted-foreground leading-5">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button
+                      size="lg"
+                      className="text-base px-6"
+                      onClick={() => window.open('https://github.com/TradingGoose/TradingGoose-Studio', '_blank')}
+                    >
+                      Self-host Studio Alpha
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="text-base px-6"
+                      onClick={() => window.open('https://tradinggoose.ai', '_blank')}
+                    >
+                      Visit tradinggoose.ai
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="h-full border-t lg:border-t-0 lg:border-l border-border/60 bg-background/30 p-6 md:p-8 lg:p-10 flex flex-col justify-between gap-4">
+                  <div className="space-y-4">
+                    <div className="overflow-hidden rounded-2xl border border-border/70 bg-background shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+                      <img
+                        src="/tradinggoose-studio-preview-top.png"
+                        alt="TradingGoose Studio landing page preview"
+                        loading="lazy"
+                        width="2559"
+                        height="1398"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="overflow-hidden rounded-2xl border border-border/70 bg-background shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+                      <img
+                        src="/tradinggoose-studio-preview.png"
+                        alt="TradingGoose Studio interface preview"
+                        loading="lazy"
+                        width="2559"
+                        height="1398"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Preview of TradingGoose Studio alpha. It is currently available on GitHub for self-hosting, not as a hosted service.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 

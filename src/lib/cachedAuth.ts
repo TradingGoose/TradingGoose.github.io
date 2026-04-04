@@ -1,4 +1,4 @@
-import { supabase, registerRateLimitHit, clearRateLimitState, isRateLimited } from './supabase';
+import { supabase, registerRateLimitHit, clearRateLimitState, isRateLimited, isSupabaseConfigured } from './supabase';
 import type { Session, User } from '@supabase/supabase-js';
 
 // Simple promise-based cache to prevent concurrent requests
@@ -40,6 +40,10 @@ export const updateCachedSession = (session: Session | null) => {
  * Uses promise caching to ensure only one request is in-flight at a time
  */
 export const getCachedSession = async (): Promise<Session | null> => {
+  if (!isSupabaseConfigured) {
+    return null;
+  }
+
   const now = Date.now();
   
   if (rateLimitCooldownActive || isRateLimited()) {
@@ -157,6 +161,10 @@ export const getCachedSession = async (): Promise<Session | null> => {
  * Uses promise caching to ensure only one request is in-flight at a time
  */
 export const getCachedUser = async (): Promise<User | null> => {
+  if (!isSupabaseConfigured) {
+    return null;
+  }
+
   // If we already have a promise in flight, return it
   if (userPromise) {
     return userPromise;
@@ -187,7 +195,7 @@ export const getCachedUser = async (): Promise<User | null> => {
   return userPromise;
 };
 
-if (!authListenerRegistered) {
+if (isSupabaseConfigured && !authListenerRegistered) {
   supabase.auth.onAuthStateChange((_event, session) => {
     syncSessionCache(session);
 

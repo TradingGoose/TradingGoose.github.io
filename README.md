@@ -1,16 +1,20 @@
 <div align="center">
 
-<h1 style="line-height:50px;" align="center"><img src="public/goose.png" alt="TradingGoose Logo" style=" vertical-align: middle; width:35px; height:35px;"> TradingGoose </h1>
+<h1 align="center">TradingGoose Studio</h1>
 
 [![Discord](https://dcbadge.limes.pink/api/server/wavf5JWhuT?style=flat)](https://discord.gg/wavf5JWhuT)
 
-An intelligent trading platform powered by multiple AI agents that collaborate to analyze markets, manage portfolios, and execute trades with sophisticated risk management—now fully open source.
+An AI workflow platform for technical + LLM trading built for analytics, research, charting, monitoring, and workflow automation.
+
+Start with the [TradingGoose Studio repository](https://github.com/TradingGoose/TradingGoose-Studio) and the [quick start guide](https://github.com/TradingGoose/TradingGoose-Studio/blob/main/README.md#quick-start). The original TradingGoose project documentation is preserved further down in this README.
 </div>
 
-<img src="public/screen-shot.png" alt="TradingGoose UI">
+<img src="public/tradinggoose-studio-preview.png" alt="TradingGoose Studio Preview">
 
 ## 📑 Table of Contents
 
+- [TradingGoose Studio](#tradinggoose-studio)
+- [TradingGoose Original](#tradinggoose-original)
 - [📖 Overview](#-overview)
   - [🎯 Core Concept](#-core-concept)
   - [🔄 Intelligent Execution](#-intelligent-execution)
@@ -41,6 +45,36 @@ An intelligent trading platform powered by multiple AI agents that collaborate t
   - [✅ Feature Checklist](#-feature-checklist)
 - [🤝 Contributing](#-contributing)
 - [🙏 Acknowledgments](#-acknowledgments)
+
+## TradingGoose Studio
+
+If you want to explore the new TradingGoose project, start with [TradingGoose Studio](https://github.com/TradingGoose/TradingGoose-Studio).
+
+<p>
+  <img alt="TradingGoose Studio Preview" src="public/tradinggoose-studio-preview.png" style="width:100%; max-width:1000px; height:auto;">
+</p>
+
+TradingGoose Studio is an AI workflow platform for technical + LLM trading. It is built for:
+
+- Analytics and research workflows
+- Charting and live monitoring
+- Workflow automation and iteration
+
+Start here:
+
+- Repository: [TradingGoose/TradingGoose-Studio](https://github.com/TradingGoose/TradingGoose-Studio)
+- Quick start and setup guide: [TradingGoose Studio README](https://github.com/TradingGoose/TradingGoose-Studio/blob/main/README.md#quick-start)
+
+## TradingGoose Original
+
+<div align="center">
+
+<h1 style="line-height:50px;" align="center"><img src="public/goose.png" alt="TradingGoose Logo" style=" vertical-align: middle; width:35px; height:35px;"> TradingGoose </h1>
+
+An intelligent trading platform powered by multiple AI agents that collaborate to analyze markets, manage portfolios, and execute trades with sophisticated risk management—now fully open source.
+</div>
+
+<img src="public/screen-shot.png" alt="TradingGoose UI">
 
 ## 📖 Overview
 
