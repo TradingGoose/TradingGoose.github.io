@@ -46,24 +46,6 @@ Start with the [TradingGoose Studio repository](https://github.com/TradingGoose/
 - [🤝 Contributing](#-contributing)
 - [🙏 Acknowledgments](#-acknowledgments)
 
-## TradingGoose Studio
-
-If you want to explore the new TradingGoose project, start with [TradingGoose Studio](https://github.com/TradingGoose/TradingGoose-Studio).
-
-<p>
-  <img alt="TradingGoose Studio Preview" src="public/tradinggoose-studio-preview.png" style="width:100%; max-width:1000px; height:auto;">
-</p>
-
-TradingGoose Studio is an AI workflow platform for technical + LLM trading. It is built for:
-
-- Analytics and research workflows
-- Charting and live monitoring
-- Workflow automation and iteration
-
-Start here:
-
-- Repository: [TradingGoose/TradingGoose-Studio](https://github.com/TradingGoose/TradingGoose-Studio)
-- Quick start and setup guide: [TradingGoose Studio README](https://github.com/TradingGoose/TradingGoose-Studio/blob/main/README.md#quick-start)
 
 ## TradingGoose Original
 
